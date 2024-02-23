@@ -37,10 +37,15 @@ const usersTable = (callback) => {
     if (os.platform() === 'win32') {
         exec_netUser((err, res) => {
             if (err) {
+                // Если произошла ошибка при выполнении команды 'net user', выводим ошибку в консоль
                 console.log(`Error: ${err}`);
-            } else {
-                // Регулярное выражение для обработки вывода команды 'net user' на Windows
-                callback(res.match(/User\s{3}([A-Za-z0-9_]+)/g));
+            }
+            else {
+                // Если выполнение прошло успешно, вызываем колбэк с массивом пользователей, извлекая их из вывода команды
+                callback(res
+                    .slice(res.lastIndexOf('-') + 1)
+                    .match(/([A-Za-zА-Яа-я0-9_]+)/g)
+                );
             }
         });
     } else if (os.platform() === 'linux') {
