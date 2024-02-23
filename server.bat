@@ -1,2 +1,2 @@
-echo Start server on 3000
-node ./app.js
+echo Start server
+node ./app.js 555
