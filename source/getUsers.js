@@ -17,8 +17,7 @@ const exec_netUser = (callback) => {
             }
         );
     } else if (os.platform() === 'linux') {
-// Выполнение команды для получения списка пользователей в системе Linux
-        exec('getent passwd', {encoding: "buffer"},
+        exec('cut -d: -f1 /etc/passwd', {encoding: "utf8"},
             (error, stdout, stderr) => {
                 if (error) {
                     callback(stderr, null);
@@ -27,23 +26,37 @@ const exec_netUser = (callback) => {
                 }
             }
         );
+
     } else {
         callback('Unsupported OS', null);
     }
 }
 
 // Функция для создания массива со списком пользователей
-const usersTable = (callback) => (exec_netUser((err, res) => {
-    if (err) {
-        // Если произошла ошибка при выполнении команды 'net user', выводим ошибку в консоль
-        console.log(`Error: ${err}`);
-    } else {
-        // Если выполнение прошло успешно, вызываем колбэк с массивом пользователей, извлекая их из вывода команды
-        callback(res
-            .slice(res.lastIndexOf('-') + 1)
-            .match(/([A-Za-zА-Яа-я0-9_]+)/g)
+const usersTable = (callback) => {
+    if (os.platform() === 'win32') {
+        exec_netUser((err, res) => {
+            if (err) {
+                console.log(`Error: ${err}`);
+            } else {
+                // Регулярное выражение для обработки вывода команды 'net user' на Windows
+                callback(res.match(/User\s{3}([A-Za-z0-9_]+)/g));
+            }
+        });
+    } else if (os.platform() === 'linux') {
+        exec('cut -d: -f1 /etc/passwd', {encoding: "utf8"},
+            (error, stdout, stderr) => {
+                if (error) {
+                    callback(stderr, null);
+                } else {
+                    // Регулярное выражение для обработки вывода команды 'cut -d: -f1 /etc/passwd' на Linux
+                    callback(stdout.match(/([A-Za-z0-9_]+)/g));
+                }
+            }
         );
+    } else {
+        callback('Unsupported OS', null);
     }
-}));
+};
 
 module.exports = usersTable;

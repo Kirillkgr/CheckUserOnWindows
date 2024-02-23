@@ -1,11 +1,20 @@
 doctype html
 html(lang="ru")
-head
-    title #{title}
-    meta(charset='UTF-8')
-    link(rel='stylesheet', href='/css/style.css')
-body
-    div.content
-        form&attributes({'method': 'post', 'action': '/users'})
-            input.item&attributes({'type': 'text', 'name': 'name', 'placeholder': 'Пользователь'})
-            button.item&attributes({'type': 'submit'}) |      Проверить      |
+    head
+        title= title
+        meta(charset='UTF-8')
+        link(rel='stylesheet', href='/css/style.css')
+    body
+        div.content
+            form(method='post', action='/users')
+                input.item(type='text', name='name', placeholder='Пользователь', oninput="checkInput(this)")
+                button.item(type='submit', id='submitButton', disabled) | Проверить |
+        script.
+            function checkInput(input) {
+                var button = document.getElementById('submitButton');
+                if (input.value.trim().length > 0) {
+                    button.removeAttribute('disabled');
+                } else {
+                    button.setAttribute('disabled', 'disabled');
+                }
+            }

@@ -3,6 +3,7 @@ const usersTable = require('./source/getUsers'); // Импорт функции 
 const path = require('path'); // Подключение модуля path для работы с путями файловой системы
 const express = require('express');
 const {exec} = require("child_process"); // Подключение модуля express для создания веб-приложения
+const os = require('os');
 
 const app = express(); // Создание экземпляра приложения express
 app.set('view engine', 'pug'); // Установка шаблонизатора pug
@@ -17,7 +18,7 @@ app.route('/').get((req, res) => {
 
 // Обработка POST-запроса на маршрут '/users'
 app.route('/users').post((req, res) => {
-    let name = req.body.name; // Получение имени пользователя из тела запроса
+    let name = req.body.name.trim(); // Получение имени пользователя из тела запроса
 
     // Вызов функции usersTable для получения списка пользователей и отображения страницы 'users'
     usersTable((userName) => {
@@ -30,7 +31,6 @@ app.route('/users').post((req, res) => {
 });
 
 const server = app.listen(process.argv[2], () => {
-    // let secPort = process.argv[2]
     let port
     if (process.argv[2] === undefined) {
         port = server.address().port
@@ -38,5 +38,11 @@ const server = app.listen(process.argv[2], () => {
         port = process.argv[2]
     }
     console.log(`Приложение запущено на http://localhost:${port}`)
-    exec(`explorer http://localhost:${port}`, {encoding: "buffer"});
+    if (os.platform() === 'win32') {
+        exec(`explorer http://localhost:${port}`);
+    }else if (os.platform() === 'linux') {
+        exec(`xdg-open http://localhost:${port}`);
+    } else {
+        exec(`open http://localhost:${port}`);
+    }
 })
